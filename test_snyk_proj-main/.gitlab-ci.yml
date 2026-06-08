@@ -1,0 +1,28 @@
+image: node:latest
+# dummy_comment 1
+cache:
+  paths:
+    - node_modules/
+
+install:
+  script:
+    #- npm install
+    - apt-get update -qy
+    - apt-get install --no-install-recommends -y npm
+
+snyk:
+  script:
+    - npm install -g snyk
+    - npm install -g snyk-to-html
+    #- snyk auth 49a388e0-2714-48a1-881d-10dd0b6a3018
+    - snyk auth 2cdbb335-cb00-4dfa-bd3b-8830ef70b9d7
+    #- snyk monitor --project-name=PROJECT_NAME #add if you want to show the vulnerabilities on Snyk’s Dashboard (DarkCloud). You will receive an error message in “Artifacts” if the file formats are unsupported by these Snyk’ module
+    - snyk iac test --json > results_iac.json || true #--report
+    - snyk code test --json > results.json || true
+    - snyk-to-html -i results.json -o results.html
+    - snyk-to-html -i results_iac.json -o results_iac.html
+  artifacts:
+    paths:
+      - results.html
+      - results_iac.html
+    expire_in: 1 week
